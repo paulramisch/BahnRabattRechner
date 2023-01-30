@@ -24,28 +24,33 @@ Schritte:
 [x] Input
     [x] Input Alter (Buttons)
     [x] Input Klasse (Buttons)
-[] View anpassen
+[x] View anpassen
     [x] View in Tabelle umwandeln
         https://medium.com/allenhwkim/mobile-friendly-table-b0cb066dbc0e
-    [] Drop-Downs für Ticket-Art, Klasse, Reisende, Bahncard
-    [] Table-View in Drag & Drop
-    [] Ticket via Tabelle hinzufügen
-    [] Beispiel-Content anzeigen & Overlay: Drag & Drop oder eintippen
-    [] Kopier-Funktion
-    [] Feste Breiten für Tabelle
+    [x] Drop-Downs für Ticket-Art, Klasse, Reisende, Bahncard
+    [x] Ticket via Tabelle hinzufügen
+    [x] Drag & Drop Overlay
+    [x] Kopier-Funktion
+[x] Footer
+    [x] Impressum / Datenschutz-Link
+[x] Design
+    [x] Mobil-Version verbessern
+
+### Roadmap v0.2
 [] Regex Muster testen & updaten
-[] Footer
-    [] Impressum / Datenschutz-Link
+[] Handling 1. Klasse Tickets verbessern
+[] View: Feste Tabellen-Breiten
 [] Ergebnisse
     [] Analyse welches von den angezeigten das sinnvollste ist
     [] Inflationsberechnung
-[] Design ...
-    [] Mobil-Version verbessern
 
-### Roadmap v2
+### Roadmap v0.9
+[] View
+    [] Beispiel-Content anzeigen & Overlay
 [] Zentrale String Verwaltung strings.js (für potenziellen Language-Switch)
-[] Tooltips mit Erklärungen
 [] BahnCard-Fotos
+[] FAQ
+[] Tooltips mit Erklärungen
 [] Ergebnis-Modul (Alter, Klasse, Flexibilität)
     [] Mehr Fahren (View: Aktuell Fahrten, progonostiziert)
     [] Flexibler Fahren (View: Aktuell Flex vs. Sparpreis | progonostiziert ..)

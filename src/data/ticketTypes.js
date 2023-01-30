@@ -5,7 +5,8 @@ const ticketTypes = {
     "Super Sparpreis": 0.25,
     "Sparpreis Europa": 0.25,
     "Super Sparpreis EU": 0.25,
-    "Normalpreis": null
+    "Normalpreis": null,
+    "Andere": 0,
   }
   
   export default ticketTypes;

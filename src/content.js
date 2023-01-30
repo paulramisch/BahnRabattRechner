@@ -1,23 +1,55 @@
 import React from 'react';
 import * as pdfjsLib from 'pdfjs-dist/webpack';
-import TicketData from './TicketData';
-import Ticket from './Ticket';
+import TicketTable from './TicketTable';
+import Ticket from './entities/Ticket';
 import TicketSummary from './TicketSummary';
 import * as regex from './regex';
 import InvalidFileNote from './InvalidFileNote';
+import moment from 'moment';
+import { FaFilePdf } from "react-icons/fa";
+
 
 export default class App extends React.Component {
   constructor(props) {
     super(props);
+    this.body = document.querySelector("body");
+    this.handleDrop = this.handleDrop.bind(this);
+    this.handleDragOver = this.handleDragOver.bind(this);
+    this.handleDragLeave = this.handleDragLeave.bind(this);
     this.state = {
       files: '',
       tickets: [],
-      invalidFiles: []
+      invalidFiles: [],
+      tempTicket: {}
     };
   }
 
+  componentDidMount() {
+    this.body.addEventListener('drop', this.handleDrop);
+    this.body.addEventListener('dragover', this.handleDragOver);
+    this.body.addEventListener('dragleave', this.handleDragLeave);
+  }
+
+  componentWillUnmount() {
+    this.body.removeEventListener('drop', this.handleDrop);
+    this.body.removeEventListener('dragover', this.handleDragOver);
+    this.body.removeEventListener('dragleave', this.handleDragLeave);
+  }
+
+  calculateFullPrice = (ticketType, bahncard, price) => {
+    if (ticketType.includes("Flexpreis") && parseInt(bahncard) >= 25) {
+      return Math.round(parseFloat(price) / (1 - parseInt(bahncard) / 100));
+    } else if (!ticketType.includes("Flexpreis") && parseInt(bahncard) >= 25) {
+      return Math.round(parseFloat(price) / 0.75);
+    } else {
+      return parseFloat(price);
+    }
+  }
+
   submit = async (ev) => {
-    ev.preventDefault();
+    if(ev && ev.preventDefault) {
+      ev.preventDefault()
+    };
     if (this.state.files) {
       for (let file of this.state.files) {
         // Empty errors
@@ -65,14 +97,8 @@ export default class App extends React.Component {
               return;
             }
 
-            // Calculate discounted price
-            if (ticketType.includes("Flexpreis") && parseInt(bahncard) >= 25) {
-              var fullPrice =  Math.round(parseFloat(price) / (1 - parseInt(bahncard) / 100));
-            } else if (!ticketType.includes("Flexpreis") && parseInt(bahncard) >= 25) {
-              var fullPrice =  Math.round(parseFloat(price) / 0.75);
-            } else {
-              var fullPrice = parseFloat(price);
-            }
+            // Calculate full undiscounted price
+            var fullPrice = this.calculateFullPrice(ticketType, bahncard, price);
 
             // Create new ticket class
             var newTicket = new Ticket(
@@ -99,17 +125,97 @@ export default class App extends React.Component {
     });
   }
 
+  handleCopy = (index) => {
+    this.setState(state => {
+      const newTicket = { ...state.tickets[index] };
+      state.tickets.push(newTicket);
+      return { tickets: state.tickets };
+    });
+  }
+
+  handleDrop = (event) => {
+    event.preventDefault();
+    if(event.dataTransfer && event.dataTransfer.files.length) {
+        const files = event.dataTransfer.files;
+        this.setState({ files }, () => this.submit());
+    } else {
+        console.log("No files found!");
+    }
+    this.body.classList.remove("drag-over");
+  }
+
+  handleDragOver(e) {
+    e.preventDefault();
+    this.body.classList.add("drag-over");
+  }
+
+  handleDragLeave(e) {
+    e.preventDefault();
+    this.body.classList.remove("drag-over");
+  }
+
   handleCloseInvalidFileNote = () => {
     this.setState({ invalidFiles: [] });
   }
 
   handleCellBlur = (e, index, key) => {
+    let updatedTicket;
+    if (tickets[index]) {
+      updatedTicket = {...this.state.tickets[index]};
+    } else {
+      updatedTicket = {...this.state.tempTicket};
+    }
+    let value;
+    if(key === 'journeyDate') {
+        if(e.target.tagName === 'INPUT') {
+            value = e.target.value;
+        }
+        else if(e.target.tagName === 'P') {
+            value = e.target.innerText;
+        }
+        let date = moment(value, "YYYY-MM-DD");
+        console.log(value)
+        if(date.isValid()) {
+            updatedTicket[key] = date.format('YYYY-MM-DD');
+        } else {
+            console.log("Invalid date");
+            return;
+        }
+    } else {
+        if(e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+            value = e.target.value;
+        } else {
+            value = e.target.innerText;
+        }
+        updatedTicket[key] = value;
+    }
+    if (tickets[index]) {
+      this.setState(state => {
+        let updatedTickets = state.tickets;
+        updatedTickets[index] = updatedTicket;
+        return { tickets: updatedTickets };
+      });
+    } else {
+      this.setState({ tempTicket: updatedTicket });
+    }
+  }
+
+
+  handleManualAdd = (index) => {
+    let updatedTicket = {...this.state.tempTicket};
+
+    // Check values and otherwise set defaults
+    updatedTicket.price = updatedTicket.price || 0; 
+    updatedTicket.ticketType = updatedTicket.ticketType || "Flexpreis";
+
+    // Set full undicsounted price
+    updatedTicket.fullPrice = this.calculateFullPrice(updatedTicket.ticketType, updatedTicket.bahncard, updatedTicket.price);
+
+    // Update ticket list
     this.setState(state => {
-      let updatedTicket = {...state.tickets[index]};  // create a copy of the ticket
-      updatedTicket[key] = e.target.innerText;  // update the appropriate key with the new value  
       let updatedTickets = state.tickets;
-      updatedTickets[index] = updatedTicket;  // update the appropriate ticket
-      return { tickets: updatedTickets }
+      updatedTickets[index] = updatedTicket;
+      return { tickets: updatedTickets, updatedTicket: {} };
     });
   }
 
@@ -117,14 +223,20 @@ export default class App extends React.Component {
     return (
       <div>
         {this.state.invalidFiles.length > 0 && <InvalidFileNote files={this.state.invalidFiles} handleCloseInvalidFileNote={this.handleCloseInvalidFileNote} />}
-        <TicketData tickets={this.state.tickets} handleDelete={this.handleDelete} handleCellBlur={this.handleCellBlur} />        
+        <TicketTable 
+        tickets={this.state.tickets} 
+        handleDelete={this.handleDelete} 
+        handleCellBlur={this.handleCellBlur} 
+        handleManualAdd={this.handleManualAdd}
+        handleCopy={this.handleCopy}
+        />        
         <form onSubmit={this.submit} className="fileForm">
-          <input onChange={this.handleChange} type="file" id="tickets" multiple/>
-          <input type="submit" value="Send" />
+          <p>< FaFilePdf />  Ticket-PDFs auswählen oder per Drag and Drop hier ablegen.</p>
+          <input onChange={this.handleChange} type="file" id="tickets" multiple/>&nbsp;
+          <input type="submit" value="Hinzufügen" />
         </form>
         <TicketSummary tickets={this.state.tickets.sort((a, b) => new Date(a.journeyDate) - new Date(b.journeyDate))} />
-      </div>
-    );
+      </div>);
   }
 
 };
