@@ -35,7 +35,7 @@ body::before {
     background: 
       linear-gradient(180deg, rgba(115,115,249,0.43), rgba(0,0,0,0)),
       url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-      background-repeat: repeat-y;
+      background-repeat: repeat-x;
     z-index: -2;
     width: 100%;
     height: 400px;
@@ -98,10 +98,24 @@ h1, h2, h3 {
       linear-gradient(156deg, rgba(0,0,255,0.5), rgba(95,0,140,0.8)),
       url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");   
     background-size: contain, 300px;
+    background-repeat: no-repeat, repeat;
     content: "";
     box-shadow: var(--shadow), var(--shadow2);
 }
 
+/* Styles for Safari */
+@media not all and (min-resolution:.001dpcm) {
+    @media {
+        #introContent::before, #result::before {
+            box-shadow: none;
+            background: 
+            linear-gradient(156deg, rgba(0,0,255,0.45), rgba(95,0,140,0.8)),
+            url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");   
+      
+        }
+        
+    }
+}
 #introContent, #result {
     display: inline-block;
     position: relative;
@@ -257,11 +271,13 @@ table tr:nth-child(2n) {
 }
 
 #ticket-table input, #ticket-table select {
+    -webkit-appearance: none;
     width: auto;
     border: none;
     background-color: transparent;
     font-size: var(--size);
     font-family: var(--font);
+    
 }
 
 .addTicket select, .addTicket p, .addTicket input {
