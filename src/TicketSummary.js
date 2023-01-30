@@ -7,7 +7,6 @@ const TicketSummary = ({tickets}) => {
   let totalPrice = 0;
   let totalUndiscountedPrice = 0;
   const bahnCardDiscounts = {};
-  const bahnCardSavings = {};
   const ageGroups = ["6-18", "19-26", "27-64", "65+"];
   const ticketClasses = [1, 2];
 
@@ -24,23 +23,30 @@ const TicketSummary = ({tickets}) => {
   // Iterate over the tickets
   tickets.forEach(ticket => {
       totalPrice += parseFloat(ticket.price);
-      totalUndiscountedPrice += parseFloat(ticket.fullPrice);
+      totalUndiscountedPrice += (parseFloat(ticket.fullPrice) / ticket.travelersCount);
   
       // Get the max discount for the ticket type
       let maxDiscount = ticketTypes[ticket.ticketType] || 1;
   
       // Iterate over every BahnCard type
       for (let bahnCardType of Object.keys(bahnCardTypes)) {
+          let bahnCardClass = bahnCardTypes[bahnCardType].ticketClass;
           let discount = bahnCardTypes[bahnCardType].discount;
           let key = bahnCardType
-  
-          // Check if the BahnCard type has a higher discount than the max discount
-          if (discount < maxDiscount) {
+
+          // Check if the BahnCard is applipicable
+          if (ticket.ticketClass == 1 && bahnCardClass == 1) 
+          {
+            maxDiscount = 0
+          } else {
+            // Check if the BahnCard type has a higher discount than the max discount
+            if (discount < maxDiscount) {
               maxDiscount = discount;
-          }
+            }
           
-          // If Bahncard 100 maxDiscount is 100% even for Sparpreis
-          maxDiscount = discount == 1 ? 1 : maxDiscount;
+            // If Bahncard 100 maxDiscount is 100% even for Sparpreis
+            maxDiscount = discount == 1 ? 1 : maxDiscount;
+          }
   
           // Initialize the total price for the BahnCard type if it hasn't been set yet
           if (!bahnCardDiscounts[key]) {
@@ -50,29 +56,28 @@ const TicketSummary = ({tickets}) => {
                   discount: bahnCardTypes[bahnCardType].discount,
               }
           }
+
+          // Calculate price per person
+          let fullPricePerPerson = parseFloat(ticket.fullPrice) / ticket.travelersCount
   
           // Add the discounted price for the ticket to the total price for the BahnCard type
-          bahnCardDiscounts[key].price += parseFloat(ticket.fullPrice) * (1 - maxDiscount);
+          bahnCardDiscounts[key].price += fullPricePerPerson * (1 - maxDiscount);
           bahnCardDiscounts[key].savings = 0
       }
   });
 
   // Compute Savings
   for (const key in bahnCardDiscounts) {
-    let savings = totalUndiscountedPrice - bahnCardTypes[key].price - bahnCardDiscounts[key].price
-    bahnCardDiscounts[key].savings = savings.toFixed(2);
+    let savings = (totalUndiscountedPrice) - bahnCardTypes[key].price - bahnCardDiscounts[key].price
+    bahnCardDiscounts[key].savings = savings;
   }
 
-  let maxSavingsId = ""
-  if (Object.keys(bahnCardDiscounts).length > 0) {
-    maxSavingsId = Object.entries(bahnCardDiscounts).reduce((maxId, [id, bahnCard]) => {
-      if (bahnCard.savings > bahnCardDiscounts[maxId].savings) {
-        return id;
-      }
-      return maxId;
-    }, Object.keys(bahnCardDiscounts)[0]);  
-  }
-  console.log(maxSavingsId)
+  // Set best deal
+  var maxSavingsIdObject = Object.values(bahnCardDiscounts);
+  maxSavingsIdObject.sort((a, b) => b.savings - a.savings);
+  let filteredBahnCardDiscounts = Object.values(maxSavingsIdObject).filter(maxSavingsIdObject => filteredBahnCardTypes.includes(maxSavingsIdObject.id));
+  let maxSavingsId = filteredBahnCardDiscounts[0] ? filteredBahnCardDiscounts[0].id : "";
+  let maxSavingsInfo = filteredBahnCardDiscounts[0] ? bahnCardTypes[maxSavingsId].name + " " + bahnCardTypes[maxSavingsId].ticketClass + ". Klasse" : "";
 
   // Function to handle the ageGroup filter
   const handleAgeGroupFilter = (event) => {
@@ -101,6 +106,9 @@ const TicketSummary = ({tickets}) => {
 
       <section id="result">
         <h2>Ergebnisse</h2>
+        { maxSavingsInfo !== "" && filteredBahnCardDiscounts[0].savings > 0 && (
+        <p>Für Deine Fahrten im vergangenen Jahr hast Du das größte Kostensparpotenzial mit der {maxSavingsInfo}, mit dieser kannst Du {filteredBahnCardDiscounts[0].savings.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })} sparen.</p>)
+        }
         <div className="filters row">
 
           <div className="filter-group col-6 col-sm-4">
@@ -142,7 +150,7 @@ const TicketSummary = ({tickets}) => {
             let price = bahnCard.price;
             let totalPrice = bahnCardDiscounts[id] ? bahnCardDiscounts[id].price : 0;
             let savings = bahnCardDiscounts[id] ? bahnCardDiscounts[id].savings : 0;
-            let cardClass = id === maxSavingsId ? "highest-savings" : "";
+            let cardClass = id == maxSavingsId ? "highest-savings" : "";
             let negativeClass = savings < 0 ? 'negative-savings' : '';
 
             return (
@@ -155,15 +163,15 @@ const TicketSummary = ({tickets}) => {
                         <tbody>
                           <tr>
                             <td>Rabatt</td>
-                            <td class="alignRight">{totalUndiscountedPrice - totalPrice} €</td>
+                            <td className="alignRight">{(totalUndiscountedPrice - totalPrice).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</td>
                           </tr>
                           <tr>
                             <td>Preis</td>
-                            <td class="alignRight">- {price} €</td>
+                            <td className="alignRight">- {price.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</td>
                           </tr>
                           <tr className="result">
                             <td>Ersparnis</td>
-                            <td class="alignRight">{savings} €</td>
+                            <td className="alignRight">{savings.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</td>
                           </tr>
                         </tbody>
                         </table>

@@ -37,9 +37,14 @@ Schritte:
     [x] Mobil-Version verbessern
 
 ### Roadmap v0.2
-[] Regex Muster testen & updaten
-[] Handling 1. Klasse Tickets verbessern
-[] View: Feste Tabellen-Breiten
+[x] Bugs
+    [x] Mailadresse
+    [x] Error bei reinziehen
+    [x] View Overlay Drag & Drop
+    [x] BahnCard edit
+[x] Regex Muster testen & updaten
+[x] Handling 1. Klasse Tickets verbessern
+[x] View: Feste Tabellen-Breiten
 [] Ergebnisse
     [] Analyse welches von den angezeigten das sinnvollste ist
     [] Inflationsberechnung

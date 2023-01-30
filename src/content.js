@@ -54,63 +54,77 @@ export default class App extends React.Component {
       for (let file of this.state.files) {
         // Empty errors
         this.setState({  invalidFiles: [] });
-        
-        // Create reader
-        const reader = new FileReader();
-        reader.readAsArrayBuffer(file);
-        reader.addEventListener("load", async () => {
-            var pdfData = await pdfjsLib.getDocument({ data: new Uint8Array(reader.result) }).promise;
-            var page = await pdfData.getPage(1);
-            var textContent = await page.getTextContent();
-            var ticketText = textContent.items.map(item => item.str).join(" ").replace(/\s+/g, ' ');
 
-            // Match ticket data
-            var outwardJourneyMatch = ticketText.match(regex.outwardJourneyRegex);
-            var returnJourneyMatch = ticketText.match(regex.returnJourneyRegex);
-            var priceMatch = ticketText.match(regex.priceRegex);
-            var ticketClassMatch = ticketText.match(regex.ticketClassRegex);
-            var journeyDateMatch = ticketText.match(regex.journeyDateRegex);
-            var ticketTypeMatch = ticketText.match(regex.ticketTypeRegex);
-            var bahncardMatch = ticketText.match(regex.bahncardRegex);
+        // Check if the file is a PDF
+        if (!file.name.endsWith(".pdf")) {
+          this.setState(state => {
+            return { invalidFiles: [...state.invalidFiles, file.name] };
+          });
+          continue;
+        }
 
-            // Extract ticket data
-            var outwardJourney = outwardJourneyMatch ? outwardJourneyMatch[1] || outwardJourneyMatch[2] : "";
-            var returnJourney = returnJourneyMatch ? returnJourneyMatch[1] : "";
-            var price = priceMatch ? parseInt(priceMatch[2]) : 0;
-            var ticketClass = ticketClassMatch ? parseInt(ticketClassMatch[1]) || parseInt(ticketClassMatch[2]) : 2;
-            var travelersCount = priceMatch ? parseInt(priceMatch[1]) : 1;
-            var journeyDate = journeyDateMatch ? new Date(journeyDateMatch[1].split(".").reverse().join("-")) : "";
-            var ticketType = ticketTypeMatch ? ticketTypeMatch[1] || ticketTypeMatch[2] || ticketTypeMatch[3] : "";
-            var bahncard = bahncardMatch ? parseInt(bahncardMatch[1]) : 0;
+        try {
+          // Create reader
+          const reader = new FileReader();
+          reader.readAsArrayBuffer(file);
+          reader.addEventListener("load", async () => {
+              var pdfData = await pdfjsLib.getDocument({ data: new Uint8Array(reader.result) }).promise;
+              var page = await pdfData.getPage(1);
+              var textContent = await page.getTextContent();
+              var ticketText = textContent.items.map(item => item.str).join(" ").replace(/\s+/g, ' ');
 
-            // Clean data
-            outwardJourney = outwardJourney.replace(/\+City/g, '').replace(" -> ", ' ').replace(/\s/g, ' - ')
-            returnJourney = returnJourney != "" ? returnJourney.replace(/\+City/g, '').replace(" -> ", '').replace(/\s/g, ' - ') : "";
-            ticketType = ticketType.replace(" (Einfache Fahrt)", '').replace(" (Hin- und Rückfahrt)", '').replace(/ \d.*/g, '')
-            var journey = returnJourney == "" ? outwardJourney : outwardJourney + ", " + returnJourney
+              // Match ticket data
+              var outwardJourneyMatch = ticketText.match(regex.outwardJourneyRegex);
+              var returnJourneyMatch = ticketText.match(regex.returnJourneyRegex);
+              var priceMatch = ticketText.match(regex.priceRegex);
+              var ticketClassMatch = ticketText.match(regex.ticketClassRegex);
+              var journeyDateMatch = ticketText.match(regex.journeyDateRegex);
+              var ticketTypeMatch = ticketText.match(regex.ticketTypeRegex);
+              var bahncardMatch = ticketText.match(regex.bahncardRegex);
 
-            // Check if outwardJourney and journeyDate are empty
-            if (outwardJourney === "" || journeyDate === "") {
+              // Extract ticket data
+              var outwardJourney = outwardJourneyMatch ? outwardJourneyMatch[1] || outwardJourneyMatch[2]|| outwardJourneyMatch[3] : "";
+              var returnJourney = returnJourneyMatch ? returnJourneyMatch[1] || returnJourneyMatch[2]: "";
+              var price = priceMatch ? parseFloat(priceMatch[2]) : 0;
+              var ticketClass = ticketClassMatch ? parseInt(ticketClassMatch[1]) || parseInt(ticketClassMatch[2]) : 2;
+              var travelersCount = priceMatch ? parseInt(priceMatch[1]) : 1;
+              var journeyDate = journeyDateMatch ? new Date(journeyDateMatch[1].split(".").reverse().join("-")) : "";
+              var ticketType = ticketTypeMatch ? ticketTypeMatch[1] || ticketTypeMatch[2] || ticketTypeMatch[3] : "";
+              var bahncard = bahncardMatch ? parseInt(bahncardMatch[1]) : 0;
+              console.log(journeyDate)
+              // Clean data
+              outwardJourney = outwardJourney.replace(/\+City/g, '').replace(" -> ", ' ').replace(/\s/g, ' - ')
+              returnJourney = returnJourney != "" ? returnJourney.replace(/\+City/g, '').replace(" -> ", ' ').replace(/\s/g, ' - ') : "";
+              ticketType = ticketType.replace(" (Einfache Fahrt)", '').replace(" (Hin- und Rückfahrt)", '').replace(/ \d.*/g, '')
+              var journey = returnJourney == "" ? outwardJourney : outwardJourney + ", " + returnJourney
+
+              // Check if outwardJourney and journeyDate are empty
+              if (outwardJourney === "" || journeyDate === "") {
+                this.setState(state => {
+                  return { invalidFiles: [...state.invalidFiles, file.name] };
+                });
+                return;
+              }
+
+              // Calculate full undiscounted price
+              var fullPrice = this.calculateFullPrice(ticketType, bahncard, price);
+
+              // Create new ticket class
+              var newTicket = new Ticket(
+                outwardJourney, returnJourney, journey, price, fullPrice, ticketClass, travelersCount, journeyDate, ticketType, bahncard, ticketText);
+
               this.setState(state => {
-                return { invalidFiles: [...state.invalidFiles, file.name] };
+                // Sort the tickets by journeyDate
+                var tickets = [...state.tickets, newTicket].sort((a, b) => new Date(a.journeyDate) - new Date(b.journeyDate));
+                return { tickets: tickets, files: '' };
               });
-              return;
-            }
-
-            // Calculate full undiscounted price
-            var fullPrice = this.calculateFullPrice(ticketType, bahncard, price);
-
-            // Create new ticket class
-            var newTicket = new Ticket(
-              outwardJourney, returnJourney, journey, price, fullPrice, ticketClass, travelersCount, journeyDate, ticketType, bahncard, ticketText);
-
+            }, false);
+          } catch {
             this.setState(state => {
-              // Sort the tickets by journeyDate
-              var tickets = [...state.tickets, newTicket].sort((a, b) => new Date(a.journeyDate) - new Date(b.journeyDate));
-              return { tickets: tickets, files: '' };
+              return { invalidFiles: [...state.invalidFiles, file.name] };
             });
-          }, false);
-      }
+          }
+        }
     }
   };
 
@@ -160,7 +174,7 @@ export default class App extends React.Component {
 
   handleCellBlur = (e, index, key) => {
     let updatedTicket;
-    if (tickets[index]) {
+    if (this.state.tickets[index]) {
       updatedTicket = {...this.state.tickets[index]};
     } else {
       updatedTicket = {...this.state.tempTicket};
@@ -184,20 +198,25 @@ export default class App extends React.Component {
     } else {
         if(e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
             value = e.target.value;
+            
         } else {
             value = e.target.innerText;
         }
         updatedTicket[key] = value;
     }
-    if (tickets[index]) {
+    if (this.state.tickets[index]) {
       this.setState(state => {
         let updatedTickets = state.tickets;
         updatedTickets[index] = updatedTicket;
         return { tickets: updatedTickets };
+      }, () => {
+        console.log("State updated successfully:", this.state.tickets);
       });
     } else {
-      this.setState({ tempTicket: updatedTicket });
-    }
+      this.setState({ tempTicket: updatedTicket }, () => {
+        console.log("State updated successfully");
+      });
+    }    
   }
 
 
@@ -205,8 +224,11 @@ export default class App extends React.Component {
     let updatedTicket = {...this.state.tempTicket};
 
     // Check values and otherwise set defaults
-    updatedTicket.price = updatedTicket.price || 0; 
+    updatedTicket.price = parseFloat(updatedTicket.price) || 0; 
     updatedTicket.ticketType = updatedTicket.ticketType || "Flexpreis";
+    updatedTicket.bahncard = updatedTicket.bahncard || 0;
+    updatedTicket.travelersCount = updatedTicket.travelersCount || 1;
+    updatedTicket.ticketClass = updatedTicket.ticketClass || 2;
 
     // Set full undicsounted price
     updatedTicket.fullPrice = this.calculateFullPrice(updatedTicket.ticketType, updatedTicket.bahncard, updatedTicket.price);
@@ -214,10 +236,11 @@ export default class App extends React.Component {
     // Update ticket list
     this.setState(state => {
       let updatedTickets = state.tickets;
-      updatedTickets[index] = updatedTicket;
+      updatedTickets[index - 1] = updatedTicket;
+      console.log(updatedTickets)
       return { tickets: updatedTickets, updatedTicket: {} };
     });
-  }
+  };
 
   render() {
     return (

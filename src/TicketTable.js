@@ -36,7 +36,7 @@ const TicketData = (props) => {
                     
                     return (
                         <tr key={index}>
-                            <td label="#">{counter}</td>
+                            <td label="#" className="table-count">{counter}</td>
                             <td label="Datum" className="table-date">
                                 <input type="date" onBlur={(e) => props.handleCellBlur(e, index, 'journeyDate')} onKeyDown={(e) => handleEnterKey(e, index, 'journeyDate')} value={formattedDate}/>
                             </td>
@@ -67,17 +67,18 @@ const TicketData = (props) => {
                             </td>
                             <td label="BahnCard" className="table-bahncard">
                                 <select value={ticket.bahncard} onChange={(e) => props.handleCellBlur(e, index, "bahncard")}>
-                                    <option value="25">0</option>
+                                    <option value="0">0</option>
                                     <option value="25">25</option>
                                     <option value="50">50</option>
                                     <option value="100">100</option>
                                 </select>
                             </td>
                             <td label="Preis" className="price table-price alignRight-sm">
-                                <input type="text" size="3" placeholder="0" onBlur={(e) => props.handleCellBlur(e, index, 'price')} onKeyDown={(e) => handleEnterKey(e, index, 'price')} value={ticket.price}/>
+                                <input type="text" size="5" placeholder="0" onBlur={(e) => props.handleCellBlur(e, index, 'price')} onKeyDown={(e) => handleEnterKey(e, index, 'price')} 
+                                value={ticket.fullPrice.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}/>
                             </td>
                             <td className='alignRight-sm table-actions'>
-                                <button onClick={() => props.handleCopy(index)}>< FaCopy /></button>&nbsp;
+                                <button onClick={() => props.handleCopy(index)}>< FaCopy /></button>
                                 <button onClick={() => props.handleDelete(index)}>< FaTrash /></button>
                             </td>
                         </tr>
@@ -85,7 +86,7 @@ const TicketData = (props) => {
                 })}
 
                 <tr key={counter + 1} className="addTicket">
-                    <td label="#"></td>
+                    <td label="#" className="table-count"></td>
                     <td className="addDate table-date">
                         <input type="date" onBlur={(e) => props.handleCellBlur(e, counter + 1, 'journeyDate')} />
                     </td>
@@ -124,7 +125,7 @@ const TicketData = (props) => {
                         </select>
                     </td>
                     <td label="Preis" className="price alignRight-sm table-price">
-                        <input type="number" onChange={(e) => props.handleCellBlur(e, counter + 1, "price")} placeholder="0" size="3"/>
+                        <input type="number" onChange={(e) => props.handleCellBlur(e, counter + 1, "price")} placeholder="0,00" size="5"/>
                     </td>
                     <td className='alignRight-sm table-actions'>
                         <button onClick={() => props.handleManualAdd(counter + 1)}>< FaSave /></button>

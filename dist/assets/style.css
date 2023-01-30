@@ -6,9 +6,8 @@
     --yellow: rgb(255, 246, 180);
     --overlay: rgba(85, 128, 255, 0.585);
 
-    --red: rgb(180, 8, 8);
-    --bgred: rgba(180, 8, 8, 0.109);
-    --green: rgb(0, 95, 35);
+    --bgred: rgba(180, 8, 8, 0.1);
+    --bggreen: rgba(0, 95, 35, 0.1);
 
     --size: 1rem;
     --round: calc(var(--size) / 3);
@@ -47,12 +46,14 @@ body::before {
 
 .drag-over::after {
     position: fixed;
-    width: calc(100% - 56px);
-    height: calc(100% - 46px);
+    width: calc(100vw - 56px);
+    height: calc(100vh - 46px);
     left: 28px;
     top: 23px;
-    padding: 45% 20%;
     text-align: center;
+    display: flex;
+    align-items:center;
+    justify-content:center;
     vertical-align: middle;
     z-index: 999;
     content: "Dateien hier ablegen";
@@ -122,6 +123,26 @@ h1, h2, h3 {
 }
 
 @media screen and (min-width: 992px) {
+    .table-count {
+        width: 5%;
+    }
+
+    .table-date, .table-type {
+        width: 15%;
+    }
+    
+    .table-journey {
+        width: 20%;
+    }
+
+    .table-class, .table-travelers, .table-bahncard {
+        width: 7%;
+    }
+
+    .table-price {
+        width: 9%;
+    }
+
     #introContent::before, #result::before {
         width: calc(100% + 60px);
         margin-left: -30px;
@@ -235,11 +256,23 @@ table tr:nth-child(2n) {
     background-color: var(--light);
 }
 
-select {
+#ticket-table input, #ticket-table select {
+    width: auto;
+    border: none;
+    background-color: transparent;
+    font-size: var(--size);
+    font-family: var(--font);
+}
+
+.addTicket select, .addTicket p, .addTicket input {
     background: none;
-    border: 1px solid var(--grey);
+    border: 1px solid var(--grey)  !important;
     padding: calc(var(--size) / 3);
     border-radius: var(--round);
+}
+
+.addTicket select {
+    font-size: var(--size);
 }
 
 #ticket-table button {
@@ -247,15 +280,10 @@ select {
     border: 1px solid var(--grey);
     padding: calc(var(--size) / 3);
     border-radius: var(--round);
+    margin: 0 0 calc(var(--size) / 3) calc(var(--size) / 3);
 }
 
-#ticket-table input {
-    width: auto;
-    border: none;
-    background-color: transparent;
-    font-size: var(--size);
-    font-family: var(--font);
-}
+
 
 /* Chrome, Safari, Edge, Opera */
 #ticket-table input::-webkit-outer-spin-button,
@@ -306,6 +334,7 @@ p[contentEditable]:not(:empty):before {
     background-color: var(--lightGrey);
     padding: calc(var(--size) * 2);
     text-align: center;
+    box-shadow: var(--shadow), var(--shadow2);
 }
 
 /* Price Summary */
@@ -398,9 +427,14 @@ color: var(--dark);
     border-top: 1px var(--dark) solid;
 }
 
+.highest-savings .result td {
+    background-color: var(--bggreen); 
+}
+
 .negative-savings .result td {
     background-color: var(--bgred); 
 }
+
 /* Columns */
 *, ::after, ::before {
     box-sizing: border-box;
