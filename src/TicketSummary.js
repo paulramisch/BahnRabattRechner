@@ -102,7 +102,8 @@ const TicketSummary = ({tickets}) => {
   return (
     <div>
       <div className="priceSummary">
-        <p>Gesamtpreis: {totalPrice}<br/>Gesamtpreis ohne BahnCard-Rabatte: {totalUndiscountedPrice}</p>
+        <p>Gesamtpreis: {totalPrice.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+        <br/>Gesamtpreis ohne BahnCard-Rabatte: {totalUndiscountedPrice.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
       </div>
 
       <section id="result">

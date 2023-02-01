@@ -38,13 +38,16 @@ export default class App extends React.Component {
   }
 
   calculateFullPrice = (ticketType, bahncard, price) => {
-    if (ticketType.includes("Flexpreis") && parseInt(bahncard) >= 25) {
-      return Math.round(parseFloat(price) / (1 - parseInt(bahncard) / 100));
-    } else if (!ticketType.includes("Flexpreis") && parseInt(bahncard) >= 25) {
-      return Math.round(parseFloat(price) / 0.75);
+    let maxDiscount = ticketTypes[ticketType] || 1;
+    
+    let discount = 0;
+    if (parseInt(bahncard)/100 < maxDiscount){
+      discount = parseInt(bahncard)/100;
     } else {
-      return parseFloat(price);
+      discount = maxDiscount;
     }
+    
+    return Math.round((parseFloat(price) / (1 - discount)) * 100) / 100;
   }
 
   submit = async (ev) => {
@@ -73,7 +76,6 @@ export default class App extends React.Component {
               var page = await pdfData.getPage(1);
               var textContent = await page.getTextContent();
               var ticketText = textContent.items.map(item => item.str).join(" ").replace(/\s+/g, ' ');
-              console.log(ticketText)
 
               // Match ticket data
               var outwardJourneyMatch = ticketText.match(regex.outwardJourneyRegex);
@@ -93,7 +95,6 @@ export default class App extends React.Component {
               var journeyDate = journeyDateMatch ? new Date(journeyDateMatch[1].split(".").reverse().join("-")) : "";
               var ticketType = ticketTypeMatch ? ticketTypeMatch[1] || ticketTypeMatch[2] || ticketTypeMatch[3] || ticketTypeMatch[4] : "";
               var bahncard = bahncardMatch ? parseInt(bahncardMatch[1]) : 0;
-              console.log(journeyDate)
 
               // Clean data
               outwardJourney = outwardJourney.replace(/\+City/g, '').replace(" -> ", ' ').replace(/\s/g, ' - ')
@@ -104,7 +105,6 @@ export default class App extends React.Component {
 
               // Check if outwardJourney and journeyDate are empty
               if (ticketType === "" || price === "" || journeyDate === "") {
-                console.log("what happens here?")
                 this.setState(state => {
                   return { invalidFiles: [...state.invalidFiles, file.name] };
                 });
@@ -193,7 +193,6 @@ export default class App extends React.Component {
             value = e.target.innerText;
         }
         let date = moment(value, "YYYY-MM-DD");
-        console.log(value)
         if(date.isValid()) {
             updatedTicket[key] = date.format('YYYY-MM-DD');
         } else {
@@ -203,11 +202,14 @@ export default class App extends React.Component {
     } else {
         if(e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
             value = e.target.value;
-            
         } else {
             value = e.target.innerText;
         }
+        if(key === 'price') {
+            value = parseFloat(value)
+        }
         updatedTicket[key] = value;
+        updatedTicket["fullPrice"] = this.calculateFullPrice(updatedTicket["ticketType"], updatedTicket["bahncard"], updatedTicket["price"]);
     }
     if (this.state.tickets[index]) {
       this.setState(state => {
@@ -242,7 +244,6 @@ export default class App extends React.Component {
     this.setState(state => {
       let updatedTickets = state.tickets;
       updatedTickets[index - 1] = updatedTicket;
-      console.log(updatedTickets)
       return { tickets: updatedTickets, updatedTicket: {} };
     });
   };
