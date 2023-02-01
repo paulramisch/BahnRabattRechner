@@ -12,10 +12,10 @@ export const ticketClassRegex = /Klasse: (\d)|-> .{3,20} (\d)/;
 
 // Tag der Reise
 // export const journeyDateRegex = /(?:Gültigkeit:.{0,10}?ab |Fahrtantritt am )([.\d]*?),? /;
-export const journeyDateRegex = /(?:Gültigkeit:(?: am .{0,10}?|.{0,10}?ab )|Fahrtantritt am )([.\d]*?)(?:,?| Gilt) /;
+export const journeyDateRegex = /(?:Gültigkeit:(?: | vom | am .{0,10}?|.{0,10}?ab )|Fahrtantritt am )([.\d]*?)(?:,?| Gilt) /;
 
 // Art des Tickets, z.B. Flexticket, Sparpreis, Super Sparpreis, Supersparpreis EU
-export const ticketTypeRegex = /(?:\d|\.) ([^\d.]{5,100}) Klasse|:\d\d[^:.]{3,20}\d([^:.]{3,50})Zahlungspositionen|[NG\d]G ([^\d]{6,30}?) \d/;
+export const ticketTypeRegex = /(?:\d|\.) ([^\d.]{5,100}) Klasse|:\d\d[^:.]{3,20}\d([^:.]{3,50})Zahlungspositionen|[NG\d]G ([^\d]{6,30}?) \d|(Super Sparpreis EU)/;
 
 // Bahncard-Rabatt?
 export const bahncardRegex = /(?:\d) (?:BC ?)?(\d\d)? (?:Hinfahrt:|Zahlungspositionen)/;

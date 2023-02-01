@@ -2,6 +2,7 @@ import React from 'react';
 import * as pdfjsLib from 'pdfjs-dist/webpack';
 import TicketTable from './TicketTable';
 import Ticket from './entities/Ticket';
+import ticketTypes from './data/ticketTypes';
 import TicketSummary from './TicketSummary';
 import * as regex from './regex';
 import InvalidFileNote from './InvalidFileNote';
@@ -72,6 +73,7 @@ export default class App extends React.Component {
               var page = await pdfData.getPage(1);
               var textContent = await page.getTextContent();
               var ticketText = textContent.items.map(item => item.str).join(" ").replace(/\s+/g, ' ');
+              console.log(ticketText)
 
               // Match ticket data
               var outwardJourneyMatch = ticketText.match(regex.outwardJourneyRegex);
@@ -84,22 +86,25 @@ export default class App extends React.Component {
 
               // Extract ticket data
               var outwardJourney = outwardJourneyMatch ? outwardJourneyMatch[1] || outwardJourneyMatch[2]|| outwardJourneyMatch[3] : "";
-              var returnJourney = returnJourneyMatch ? returnJourneyMatch[1] || returnJourneyMatch[2]: "";
+              var returnJourney = returnJourneyMatch ? returnJourneyMatch[1] || returnJourneyMatch[2] || returnJourneyMatch[3]: "";
               var price = priceMatch ? parseFloat(priceMatch[2]) : 0;
               var ticketClass = ticketClassMatch ? parseInt(ticketClassMatch[1]) || parseInt(ticketClassMatch[2]) : 2;
               var travelersCount = priceMatch ? parseInt(priceMatch[1]) : 1;
               var journeyDate = journeyDateMatch ? new Date(journeyDateMatch[1].split(".").reverse().join("-")) : "";
-              var ticketType = ticketTypeMatch ? ticketTypeMatch[1] || ticketTypeMatch[2] || ticketTypeMatch[3] : "";
+              var ticketType = ticketTypeMatch ? ticketTypeMatch[1] || ticketTypeMatch[2] || ticketTypeMatch[3] || ticketTypeMatch[4] : "";
               var bahncard = bahncardMatch ? parseInt(bahncardMatch[1]) : 0;
               console.log(journeyDate)
+
               // Clean data
               outwardJourney = outwardJourney.replace(/\+City/g, '').replace(" -> ", ' ').replace(/\s/g, ' - ')
               returnJourney = returnJourney != "" ? returnJourney.replace(/\+City/g, '').replace(" -> ", ' ').replace(/\s/g, ' - ') : "";
               ticketType = ticketType.replace(" (Einfache Fahrt)", '').replace(" (Hin- und Rückfahrt)", '').replace(/ \d.*/g, '')
+              ticketType = Object.keys(ticketTypes).find(key => key === ticketType) || 'Andere';
               var journey = returnJourney == "" ? outwardJourney : outwardJourney + ", " + returnJourney
 
               // Check if outwardJourney and journeyDate are empty
-              if (outwardJourney === "" || journeyDate === "") {
+              if (ticketType === "" || price === "" || journeyDate === "") {
+                console.log("what happens here?")
                 this.setState(state => {
                   return { invalidFiles: [...state.invalidFiles, file.name] };
                 });
