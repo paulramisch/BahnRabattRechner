@@ -23,26 +23,27 @@ const TicketSummary = ({tickets}) => {
   // Iterate over the tickets
   tickets.forEach(ticket => {
       totalPrice += parseFloat(ticket.price);
-      totalUndiscountedPrice += (parseFloat(ticket.fullPrice) / ticket.travelersCount);
-  
-      // Get the max discount for the ticket type
-      let maxDiscount = ticketTypes[ticket.ticketType] || 1;
-  
+      totalUndiscountedPrice += parseFloat(ticket.fullPrice / ticket.travelersCount);
+
       // Iterate over every BahnCard type
       for (let bahnCardType of Object.keys(bahnCardTypes)) {
+          // Get the max discount for the ticket type
+          let maxDiscount = ticketTypes[ticket.ticketType] || 1;
+
           let bahnCardClass = bahnCardTypes[bahnCardType].ticketClass;
           let discount = bahnCardTypes[bahnCardType].discount;
           let key = bahnCardType
 
           // Check if the BahnCard is applipicable
-          if (ticket.ticketClass == 1 && bahnCardClass == 1) 
+          if (ticket.ticketClass == 1 && bahnCardClass == 2) 
           {
-            maxDiscount = 0
+            maxDiscount = 0;
           } else {
             // Check if the BahnCard type has a higher discount than the max discount
             if (discount < maxDiscount) {
               maxDiscount = discount;
             }
+            
           
             // If Bahncard 100 maxDiscount is 100% even for Sparpreis
             maxDiscount = discount == 1 ? 1 : maxDiscount;

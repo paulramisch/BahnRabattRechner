@@ -70,12 +70,11 @@ const TicketData = (props) => {
                                     <option value="0">0</option>
                                     <option value="25">25</option>
                                     <option value="50">50</option>
-                                    <option value="100">100</option>
                                 </select>
                             </td>
                             <td label="Preis" className="price table-price alignRight-sm">
                                 <input type="text" size="5" placeholder="0" onBlur={(e) => props.handleCellBlur(e, index, 'price')} onKeyDown={(e) => handleEnterKey(e, index, 'price')} 
-                                value={ticket.fullPrice.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}/>
+                                value={ticket.price.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}/>
                             </td>
                             <td className='alignRight-sm table-actions'>
                                 <button onClick={() => props.handleCopy(index)}>< FaCopy /></button>
@@ -121,7 +120,6 @@ const TicketData = (props) => {
                             <option value="25">0</option>
                             <option value="25">25</option>
                             <option value="50">50</option>
-                            <option value="100">100</option>
                         </select>
                     </td>
                     <td label="Preis" className="price alignRight-sm table-price">
