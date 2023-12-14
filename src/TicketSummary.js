@@ -156,7 +156,7 @@ const TicketSummary = ({tickets}) => {
             let negativeClass = savings < 0 ? 'negative-savings' : '';
 
             return (
-                <div className="col-sm-4">
+                <div key={id} className="col-sm-4">
                     <div className={`card ${cardClass} ${negativeClass}`}>
                       <h3>{bahnCard.name}</h3>
                       <p><span className="tag">{bahnCard.ticketClass}. Klasse </span><span className="tag">{bahnCard.ageGroup} Jahre</span></p>

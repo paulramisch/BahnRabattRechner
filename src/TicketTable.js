@@ -38,11 +38,21 @@ const TicketData = (props) => {
                         <tr key={index}>
                             <td label="#" className="table-count">{counter}</td>
                             <td label="Datum" className="table-date">
-                                <input type="date" onBlur={(e) => props.handleCellBlur(e, index, 'journeyDate')} onKeyDown={(e) => handleEnterKey(e, index, 'journeyDate')} value={formattedDate}/>
+                                <input type="date" 
+                                    onBlur={(e) => props.handleCellBlur(e, index, 'journeyDate')} 
+                                    onKeyDown={(e) => handleEnterKey(e, index, 'journeyDate')} value={formattedDate}
+                                    onChange={(e) => props.handleInputChange(e, index, 'journeyDate')} />
                             </td>
                             <td className="table-journey">
-                                <p contentEditable={true} onBlur={(e) => props.handleCellBlur(e, index, 'journey')} placeholder="Reise (optional)">{ticket.journey}</p>
+                                <textarea
+                                    value={ticket.journey || ''} 
+                                    onChange={(e) => props.handleInputChange(e, index, 'journey')}
+                                    onBlur={(e) => props.handleCellBlur(e, index, 'journey')}
+                                    placeholder="Reise (optional)"
+                                    className="journey-textarea"> {/* You can define additional CSS styling with this class */}
+                                </textarea>
                             </td>
+
                             <td label="Ticket-Art" className="table-type">
                                 <select value={ticket.ticketType} onChange={(e) => props.handleCellBlur(e, index, "ticketType")}>
                                     {Object.keys(ticketTypes).map((type) => {
@@ -73,8 +83,11 @@ const TicketData = (props) => {
                                 </select>
                             </td>
                             <td label="Preis" className="price table-price alignRight-sm">
-                                <input type="text" size="5" onBlur={(e) => props.handleCellBlur(e, index, 'price')} onKeyDown={(e) => handleEnterKey(e, index, 'price')} 
-                                value={ticket.price.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})} />
+                                <input type="text" size="5" 
+                                    onBlur={(e) => props.handleCellBlur(e, index, 'price')} 
+                                    onKeyDown={(e) => handleEnterKey(e, index, 'price')} 
+                                    onChange={(e) => props.handleInputChange(e, index, 'price')}
+                                    value={ticket.price.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})} />
                             </td>
 
                             <td className='alignRight-sm table-actions'>
@@ -88,11 +101,19 @@ const TicketData = (props) => {
                 <tr key={counter + 1} className="addTicket">
                     <td label="#" className="table-count"></td>
                     <td className="addDate table-date">
-                        <input type="date" onBlur={(e) => props.handleCellBlur(e, counter + 1, 'journeyDate')} />
+                        <input type="date" 
+                            onBlur={(e) => props.handleCellBlur(e, counter + 1, 'journeyDate')} />
                     </td>
                     <td className="addJourney table-journey">
-                        <p contentEditable={true} onBlur={(e) => props.handleCellBlur(e, counter + 1, 'journey', e.target.innerText)} placeholder="Reise (optional)"></p>
+                        <textarea
+                            value={props.tickets[counter + 1]?.journey || ''} 
+                            onChange={(e) => props.handleInputChange(e, counter + 1, 'journey')}
+                            onBlur={(e) => props.handleCellBlur(e, counter + 1, 'journey')}
+                            placeholder="Reise (optional)"
+                            className="journey-textarea">
+                        </textarea>
                     </td>
+
 
                     <td label="Ticket-Art" className="table-type">
                         <select onChange={(e) => props.handleCellBlur(e, counter + 1, "ticketType")}>
