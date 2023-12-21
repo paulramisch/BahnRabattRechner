@@ -12,6 +12,12 @@ const TicketData = (props) => {
         }
     }
 
+    function handleInputChange(e, index, field) {
+        let value = e.target.value;
+        props.updateTicketField(index, field, value);
+      }   
+      
+
     return (
         <table id="ticket-table">
             <thead>
@@ -36,20 +42,21 @@ const TicketData = (props) => {
                     
                     return (
                         <tr key={index}>
-                            <td label="#" className="table-count">{counter}</td>
+                            <td label="#" className="table-count"><span>{counter}</span></td>
                             <td label="Datum" className="table-date">
                                 <input type="date" 
                                     onBlur={(e) => props.handleCellBlur(e, index, 'journeyDate')} 
-                                    onKeyDown={(e) => handleEnterKey(e, index, 'journeyDate')} value={formattedDate}
-                                    onChange={(e) => props.handleInputChange(e, index, 'journeyDate')} />
+                                    onKeyDown={(e) => handleEnterKey(e, index, 'journeyDate')} 
+                                    onChange={(e) => handleInputChange(e, index, 'journeyDate')} 
+                                    value={formattedDate} />
                             </td>
                             <td className="table-journey">
                                 <textarea
                                     value={ticket.journey || ''} 
-                                    onChange={(e) => props.handleInputChange(e, index, 'journey')}
+                                    onChange={(e) => handleInputChange(e, index, 'journey')}
                                     onBlur={(e) => props.handleCellBlur(e, index, 'journey')}
                                     placeholder="Reise (optional)"
-                                    className="journey-textarea"> {/* You can define additional CSS styling with this class */}
+                                    rows="1">
                                 </textarea>
                             </td>
 
@@ -86,7 +93,7 @@ const TicketData = (props) => {
                                 <input type="text" size="5" 
                                     onBlur={(e) => props.handleCellBlur(e, index, 'price')} 
                                     onKeyDown={(e) => handleEnterKey(e, index, 'price')} 
-                                    onChange={(e) => props.handleInputChange(e, index, 'price')}
+                                    onChange={(e) => handleInputChange(e, index, 'price')}
                                     value={ticket.price.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})} />
                             </td>
 
@@ -106,11 +113,10 @@ const TicketData = (props) => {
                     </td>
                     <td className="addJourney table-journey">
                         <textarea
-                            value={props.tickets[counter + 1]?.journey || ''} 
-                            onChange={(e) => props.handleInputChange(e, counter + 1, 'journey')}
+                            onChange={(e) => props.handleCellBlur(e, counter + 1, 'journey')}
                             onBlur={(e) => props.handleCellBlur(e, counter + 1, 'journey')}
                             placeholder="Reise (optional)"
-                            className="journey-textarea">
+                            rows="1">
                         </textarea>
                     </td>
 
@@ -124,7 +130,7 @@ const TicketData = (props) => {
                     </td>
                     <td label="Klasse" className="table-class">
                         <select defaultValue="2" onChange={(e) => props.handleCellBlur(e, counter + 1, "ticketClass")}>
-                            <option value="1" >1</option>
+                            <option value="1">1</option>
                             <option value="2">2</option>
                         </select>
                     </td>
@@ -145,7 +151,10 @@ const TicketData = (props) => {
                         </select>
                     </td>
                     <td label="Preis" className="price alignRight-sm table-price">
-                        <input type="number" onChange={(e) => props.handleCellBlur(e, counter + 1, "price")} placeholder="0,00" size="5"/>
+                        <input type="number" 
+                        onChange={(e) => props.handleCellBlur(e, counter + 1, "price")}
+                        onKeyDown={(e) => e.key === 'Enter' && props.handleManualAdd(counter + 1)}
+                        placeholder="0,00" size="5"/>
                     </td>
                     <td className='alignRight-sm table-actions'>
                         <button onClick={() => props.handleManualAdd(counter + 1)}>< FaSave /></button>

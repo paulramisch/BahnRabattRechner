@@ -76,28 +76,30 @@ export default class App extends React.Component {
               var page = await pdfData.getPage(1);
               var textContent = await page.getTextContent();
               var ticketText = textContent.items.map(item => item.str).join(" ").replace(/\s+/g, ' ');
+              // console.log(ticketText);
 
               // Match ticket data
               var outwardJourneyMatch = ticketText.match(regex.outwardJourneyRegex);
               var returnJourneyMatch = ticketText.match(regex.returnJourneyRegex);
               var priceMatch = ticketText.match(regex.priceRegex);
+              var numTravelersMatch = ticketText.match(regex.numTravelers);
               var ticketClassMatch = ticketText.match(regex.ticketClassRegex);
               var journeyDateMatch = ticketText.match(regex.journeyDateRegex);
               var ticketTypeMatch = ticketText.match(regex.ticketTypeRegex);
               var bahncardMatch = ticketText.match(regex.bahncardRegex);
 
               // Extract ticket data
-              var outwardJourney = outwardJourneyMatch ? outwardJourneyMatch[1] || outwardJourneyMatch[2]|| outwardJourneyMatch[3] : "";
+              var outwardJourney = outwardJourneyMatch ? outwardJourneyMatch[1] || outwardJourneyMatch[2]|| outwardJourneyMatch[3] || outwardJourneyMatch[4]: "";
               var returnJourney = returnJourneyMatch ? returnJourneyMatch[1] || returnJourneyMatch[2] || returnJourneyMatch[3]: "";
-              var price = priceMatch ? parseFloat(priceMatch[2]) : 0;
+              var price = priceMatch ? parseFloat(priceMatch[1]) : 0;
               var ticketClass = ticketClassMatch ? parseInt(ticketClassMatch[1]) || parseInt(ticketClassMatch[2]) : 2;
-              var travelersCount = priceMatch ? parseInt(priceMatch[1]) : 1;
+              var travelersCount = numTravelersMatch ? parseInt(numTravelersMatch[1]) : 1;
               var journeyDate = journeyDateMatch ? new Date(journeyDateMatch[1].split(".").reverse().join("-")) : "";
               var ticketType = ticketTypeMatch ? ticketTypeMatch[1] || ticketTypeMatch[2] || ticketTypeMatch[3] || ticketTypeMatch[4] : "";
               var bahncard = bahncardMatch ? parseInt(bahncardMatch[1]) : 0;
 
               // Clean data
-              outwardJourney = outwardJourney.replace(/\+City/g, '').replace(" -> ", ' ').replace(/\s/g, ' - ')
+              outwardJourney = outwardJourney.replace(/\+City/g, '').replace(" -> ", ' ').replace(/\s(?!Hbf)/g, ' - ')
               returnJourney = returnJourney != "" ? returnJourney.replace(/\+City/g, '').replace(" -> ", ' ').replace(/\s/g, ' - ') : "";
               ticketType = ticketType.replace(" (Einfache Fahrt)", '').replace(" (Hin- und Rückfahrt)", '').replace(/ \d.*/g, '')
               ticketType = Object.keys(ticketTypes).find(key => key === ticketType) || 'Andere';
@@ -110,6 +112,7 @@ export default class App extends React.Component {
                 });
                 return;
               }
+              
 
               // Calculate full undiscounted price
               var fullPrice = this.calculateFullPrice(ticketType, bahncard, price);
@@ -200,7 +203,7 @@ export default class App extends React.Component {
             return;
         }
     } else {
-        if(e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+        if(e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') {
             value = e.target.value;
         } else {
             value = e.target.innerText;
@@ -226,7 +229,20 @@ export default class App extends React.Component {
     }    
   }
 
-
+  updateTicketField = (index, key, value) => {
+    this.setState(state => {
+      let updatedTickets = [...state.tickets];
+      let updatedTicket = { ...updatedTickets[index], [key]: value };
+  
+      if (key === 'price' || key === 'ticketType' || key === 'bahncard') {
+        updatedTicket.fullPrice = this.calculateFullPrice(updatedTicket.ticketType, updatedTicket.bahncard, updatedTicket.price);
+      }
+  
+      updatedTickets[index] = updatedTicket;
+      return { tickets: updatedTickets };
+    });
+  }
+  
   handleManualAdd = (index) => {
     let updatedTicket = {...this.state.tempTicket};
 
@@ -258,6 +274,7 @@ export default class App extends React.Component {
         handleCellBlur={this.handleCellBlur} 
         handleManualAdd={this.handleManualAdd}
         handleCopy={this.handleCopy}
+        updateTicketField={this.updateTicketField}
         />        
         <form onSubmit={this.submit} className="fileForm">
           <p>< FaFilePdf />  Ticket-PDFs auswählen oder per Drag and Drop hier ablegen.</p>

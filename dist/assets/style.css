@@ -164,11 +164,18 @@ h1, h2, h3 {
         margin-top: -25px;
     }
 
+    #ticket-table th {
+        position: sticky;
+        top: 0;
+        background: var(--dark);
+        z-index: 5;
+    }
+
     #ticket-table td:first-of-type, th:first-of-type {
         padding-left: calc(var(--size) * 2);
     }
 
-    #ticket-table td:last-of-type, th:last-of-type {
+    #ticket-table td:last-of-type, #ticket-table  th:last-of-type {
         padding-right: calc(var(--size) * 2);
     }
 
@@ -177,7 +184,7 @@ h1, h2, h3 {
     }
 
     .alignRight-sm {
-        text-align: right;
+        text-align: right !important;
     }
 
     #app, #intro, footer {
@@ -260,7 +267,7 @@ table {
 #ticket-table tbody td {
     padding: calc(var(--size)*0.8) calc(var(--size) / 3);
     color: var(--dark);
-    min-height: calc(var(--size)*1.5);
+    min-height: calc(var(--size)*2);
 }
 
 table tr:nth-child(2n) {
@@ -271,14 +278,29 @@ table tr:nth-child(2n) {
     background-color: var(--light);
 }
 
-#ticket-table input, #ticket-table select {
+#ticket-table textarea {
+    display: block;
+    padding: calc(var(--size) / 3);
+    resize: none;
+    height: calc(var(--size) * 2);
+}
+
+.addTicket textarea {
+    border: 1px solid var(--grey) !important;
+}
+
+#ticket-table input, #ticket-table select, #ticket-table textarea {
     -webkit-appearance: none;
     width: auto;
     border: none;
     background-color: transparent;
     font-size: var(--size);
     font-family: var(--font);
-    
+    border-radius: var(--round);
+}
+
+#ticket-table input:hover, #ticket-table select:hover, #ticket-table textarea:hover {
+    outline: 1px solid var(--grey);
 }
 
 .addTicket select, .addTicket p, .addTicket input {
@@ -294,11 +316,24 @@ table tr:nth-child(2n) {
 
 #ticket-table button {
     background: none;
-    border: 1px solid var(--grey);
+    border: none;
     padding: calc(var(--size) / 3);
     border-radius: var(--round);
     margin: 0 0 calc(var(--size) / 3) calc(var(--size) / 3);
+    opacity: 0.5;
+    transform: scale(1.1);
 }
+
+#ticket-table button:hover {
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+.addTicket button {
+    border: 1px solid var(--grey) !important;
+    opacity: 1;
+}
+
 
 
 
@@ -367,7 +402,16 @@ p[contentEditable]:not(:empty):before {
 
 /* Filter */
 input[type="checkbox"] {
-    display: none; 
+    /* visually hidden, but seen by screenreaders */
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
 }
 
 .filter-group {
@@ -391,10 +435,15 @@ background-color: none;
 cursor: pointer;
 background: none;
 display: inline-block;
+position: relative;
 }
 .filter-button.active {
 background-color: var(--light);
 color: var(--dark);
+}
+.filter-button:focus-within {
+    outline: 3px solid var(--light);
+    z-index: 5;
 }
 
 
@@ -615,5 +664,11 @@ color: var(--dark);
         -ms-flex: 0 0 33.333333%;
         flex: 0 0 33.333333%;
         max-width: 33.333333%;
+    }
+
+    .table-count span {
+        transform: scale(5) translateX(10%);
+        opacity: 0.05;
+        display: block;
     }
 }

@@ -99,6 +99,22 @@ const TicketSummary = ({tickets}) => {
       }
   };
 
+  // Use keyboard funcitionality for the filters
+  function handleCheckboxKeydown(e, postToggleHandler) {
+    if (e.key === 'Enter') {
+        e.preventDefault(); // Prevent the default action
+
+        // Toggle the checkbox
+        e.target.checked = !e.target.checked;
+
+        // Call the passed function after the toggle
+        if (typeof postToggleHandler === 'function') {
+            postToggleHandler(e);
+        }
+    }
+  }
+
+
   return (
     <div>
       <div className="priceSummary">
@@ -116,13 +132,16 @@ const TicketSummary = ({tickets}) => {
           <div className="filter-group col-6 col-sm-4">
             <h3>Altersgruppe</h3>
             {ageGroups.map((ageGroup) => (
-              <label key={ageGroup} className={`filter-button ${ageGroupFilter.includes(ageGroup) ? 'active' : ''}`}>
+              <label key={ageGroup} 
+              className={`filter-button ${ageGroupFilter.includes(ageGroup) ? 'active' : ''}`}>
                 <input
                   type="checkbox"
                   value={ageGroup}
                   onChange={handleAgeGroupFilter}
+                  onKeyDown={(e) => handleCheckboxKeydown(e, handleAgeGroupFilter)}
                   checked={ageGroupFilter.includes(ageGroup)}
                   className="filter-checkbox"
+                  aria-label={`Nach BahnCards für die Altersgruppe ${ageGroup} filtern`}  
                 />
                 {ageGroup}
               </label>
@@ -131,13 +150,15 @@ const TicketSummary = ({tickets}) => {
           <div className="filter-group col-6 col-sm-4">
             <h3>Klasse</h3>
             {ticketClasses.map((ticketClass) => (
-              <label key={ticketClass} className={`filter-button ${ticketClassFilter.includes(ticketClass) ? 'active' : ''}`}>
+              <label key={ticketClass} 
+              className={`filter-button ${ticketClassFilter.includes(ticketClass) ? 'active' : ''}`}>
                 <input
                   type="checkbox"
                   value={ticketClass}
                   onChange={handleTicketClassFilter}
-                  checked={ticketClassFilter.includes(ticketClass)}
+                  onKeyDown={(e) => handleCheckboxKeydown(e, handleTicketClassFilter)}                  checked={ticketClassFilter.includes(ticketClass)}
                   className="filter-checkbox"
+                  aria-label={`Nach BahnCards für die Klasse ${ticketClass} filtern`}
                 />
                 {ticketClass}. Klasse
               </label>
