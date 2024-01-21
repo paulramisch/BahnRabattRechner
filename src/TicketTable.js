@@ -50,7 +50,7 @@ const TicketData = (props) => {
                                     onChange={(e) => handleInputChange(e, index, 'journeyDate')} 
                                     value={formattedDate} />
                             </td>
-                            <td className="table-journey">
+                            <td label="Reise" className="table-journey">
                                 <textarea
                                     value={ticket.journey || ''} 
                                     onChange={(e) => handleInputChange(e, index, 'journey')}
@@ -97,9 +97,9 @@ const TicketData = (props) => {
                                     value={ticket.price.toLocaleString('de-DE', {minimumFractionDigits: 2, maximumFractionDigits: 2})} />
                             </td>
 
-                            <td className='alignRight-sm table-actions'>
-                                <button onClick={() => props.handleCopy(index)}>< FaCopy /></button>
-                                <button onClick={() => props.handleDelete(index)}>< FaTrash /></button>
+                            <td label="Aktionen" className='alignRight-sm table-actions'>
+                                <button aria-label="Fahrt kopieren" onClick={() => props.handleCopy(index)}>< FaCopy /></button>
+                                <button aria-label="Fahrt löschen" onClick={() => props.handleDelete(index)}>< FaTrash /></button>
                             </td>
                         </tr>
                     )
@@ -107,11 +107,11 @@ const TicketData = (props) => {
 
                 <tr key={counter + 1} className="addTicket">
                     <td label="#" className="table-count"></td>
-                    <td className="addDate table-date">
+                    <td label="Datum" className="addDate table-date">
                         <input type="date" 
                             onBlur={(e) => props.handleCellBlur(e, counter + 1, 'journeyDate')} />
                     </td>
-                    <td className="addJourney table-journey">
+                    <td label="Reise" className="addJourney table-journey">
                         <textarea
                             onChange={(e) => props.handleCellBlur(e, counter + 1, 'journey')}
                             onBlur={(e) => props.handleCellBlur(e, counter + 1, 'journey')}
@@ -119,7 +119,6 @@ const TicketData = (props) => {
                             rows="1">
                         </textarea>
                     </td>
-
 
                     <td label="Ticket-Art" className="table-type">
                         <select onChange={(e) => props.handleCellBlur(e, counter + 1, "ticketType")}>
@@ -156,8 +155,9 @@ const TicketData = (props) => {
                         onKeyDown={(e) => e.key === 'Enter' && props.handleManualAdd(counter + 1)}
                         placeholder="0,00" size="5"/>
                     </td>
-                    <td className='alignRight-sm table-actions'>
-                        <button onClick={() => props.handleManualAdd(counter + 1)}>< FaSave /></button>
+
+                    <td label="Aktionen" className='alignRight-sm table-actions'>
+                        <button aria-label="Fahrt hinzufügen" onClick={() => props.handleManualAdd(counter + 1)}>< FaSave /></button>
                     </td>
                 </tr>
             </tbody>

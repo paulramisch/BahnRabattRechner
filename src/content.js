@@ -39,7 +39,7 @@ export default class App extends React.Component {
 
   calculateFullPrice = (ticketType, bahncard, price) => {
     let maxDiscount = ticketTypes[ticketType] || 1;
-    
+    let fullPrice = 0;
     let discount = 0;
     if (parseInt(bahncard)/100 < maxDiscount){
       discount = parseInt(bahncard)/100;
@@ -47,7 +47,8 @@ export default class App extends React.Component {
       discount = maxDiscount;
     }
     
-    return Math.round((parseFloat(price) / (1 - discount)) * 100) / 100;
+    fullPrice = (parseFloat(price) / (1 - discount));
+    return parseFloat(fullPrice.toFixed(2));
   }
 
   submit = async (ev) => {
@@ -72,11 +73,12 @@ export default class App extends React.Component {
           const reader = new FileReader();
           reader.readAsArrayBuffer(file);
           reader.addEventListener("load", async () => {
+            try {
               var pdfData = await pdfjsLib.getDocument({ data: new Uint8Array(reader.result) }).promise;
               var page = await pdfData.getPage(1);
               var textContent = await page.getTextContent();
               var ticketText = textContent.items.map(item => item.str).join(" ").replace(/\s+/g, ' ');
-              // console.log(ticketText);
+              console.log(ticketText);
 
               // Match ticket data
               var outwardJourneyMatch = ticketText.match(regex.outwardJourneyRegex);
@@ -89,20 +91,23 @@ export default class App extends React.Component {
               var bahncardMatch = ticketText.match(regex.bahncardRegex);
 
               // Extract ticket data
-              var outwardJourney = outwardJourneyMatch ? outwardJourneyMatch[1] || outwardJourneyMatch[2]|| outwardJourneyMatch[3] || outwardJourneyMatch[4]: "";
-              var returnJourney = returnJourneyMatch ? returnJourneyMatch[1] || returnJourneyMatch[2] || returnJourneyMatch[3]: "";
-              var price = priceMatch ? parseFloat(priceMatch[1]) : 0;
+              var outwardJourney = outwardJourneyMatch ? outwardJourneyMatch[1] || outwardJourneyMatch [2]|| outwardJourneyMatch[3] || outwardJourneyMatch[4]: "";
+              var returnJourney = returnJourneyMatch ? returnJourneyMatch[1] || returnJourneyMatch[2] || returnJourneyMatch[3] || returnJourneyMatch[4]: "";
+              var price = priceMatch ? parseFloat(priceMatch[1].replace(',', '.')) : 0;
               var ticketClass = ticketClassMatch ? parseInt(ticketClassMatch[1]) || parseInt(ticketClassMatch[2]) : 2;
-              var travelersCount = numTravelersMatch ? parseInt(numTravelersMatch[1]) : 1;
+              var travelersCount = numTravelersMatch ? parseInt(numTravelersMatch[1]) || parseInt(numTravelersMatch[2]) : 1;
               var journeyDate = journeyDateMatch ? new Date(journeyDateMatch[1].split(".").reverse().join("-")) : "";
-              var ticketType = ticketTypeMatch ? ticketTypeMatch[1] || ticketTypeMatch[2] || ticketTypeMatch[3] || ticketTypeMatch[4] : "";
+              var ticketTypeString = ticketTypeMatch ? ticketTypeMatch[1] || ticketTypeMatch[2] || ticketTypeMatch[3] || ticketTypeMatch[4] : "";
+              var ticketCategoryMatch = ticketTypeString != null ? ticketTypeString.match(regex.ticketCategoryRegex) : null;
+              var ticketCategory = ticketCategoryMatch != null ? ticketCategoryMatch[1].replace("SuperSparpreis", 'Super Sparpreis') : "Andere";
               var bahncard = bahncardMatch ? parseInt(bahncardMatch[1]) : 0;
 
               // Clean data
               outwardJourney = outwardJourney.replace(/\+City/g, '').replace(" -> ", ' ').replace(/\s(?!Hbf)/g, ' - ')
               returnJourney = returnJourney != "" ? returnJourney.replace(/\+City/g, '').replace(" -> ", ' ').replace(/\s/g, ' - ') : "";
-              ticketType = ticketType.replace(" (Einfache Fahrt)", '').replace(" (Hin- und Rückfahrt)", '').replace(/ \d.*/g, '')
-              ticketType = Object.keys(ticketTypes).find(key => key === ticketType) || 'Andere';
+              // Old
+              // ticketType = ticketType.replace(" (Einfache Fahrt)", '').replace(" (Hin- und Rückfahrt)", '').replace(" Young", '').replace("SuperSparpreis", 'Super Sparpreis').replace(" Europa", '').replace(" EU", '').replace(" Plus", '').replace(/ \d.*/g, '')
+              var ticketType = Object.keys(ticketTypes).find(key => key === ticketCategory) || 'Andere';
               var journey = returnJourney == "" ? outwardJourney : outwardJourney + ", " + returnJourney
 
               // Check if outwardJourney and journeyDate are empty
@@ -113,19 +118,27 @@ export default class App extends React.Component {
                 return;
               }
               
-
               // Calculate full undiscounted price
               var fullPrice = this.calculateFullPrice(ticketType, bahncard, price);
-
+              
               // Create new ticket class
               var newTicket = new Ticket(
                 outwardJourney, returnJourney, journey, price, fullPrice, ticketClass, travelersCount, journeyDate, ticketType, bahncard, ticketText);
+              
+              console.log(newTicket)
 
               this.setState(state => {
                 // Sort the tickets by journeyDate
                 var tickets = [...state.tickets, newTicket].sort((a, b) => new Date(a.journeyDate) - new Date(b.journeyDate));
                 return { tickets: tickets, files: '' };
               });
+            } catch(error) {
+              console.error(error)
+              this.setState(state => {
+                return { invalidFiles: [...state.invalidFiles, file.name] };
+              });
+            }
+
             }, false);
           } catch {
             this.setState(state => {

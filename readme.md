@@ -3,4 +3,4 @@ Datenschutzfreundliches Tool zur Berechnung, ob sich der Kauf einer Bahncard loh
 Alles im Browser und lokal auf dem Rechner.
 
 ## Build
-Für einen build in Repository einfach `run npm build` ausfüren
+Für einen build in Repository einfach `npm run build` ausfüren

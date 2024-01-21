@@ -114,12 +114,61 @@ const TicketSummary = ({tickets}) => {
     }
   }
 
+  const exportToCSV = () => {
+    const convertToCSV = () => {
+      let csvContent = "data:text/csv;charset=utf-8,";
+      // Add CSV headers with semicolon as the delimiter
+      csvContent += "Datum; Hinfahrt; Rückfahrt; Reise; Preis (€); Vollpreis ohne Rabatt (€); Rabatt (€); Klasse; Anzahl Reisende; Ticket-Typ; Bahncard\n";
+  
+      tickets.forEach(ticket => {
+        // Format the date to yyyy-mm-dd
+        const formattedDate = new Date(ticket.journeyDate).toISOString().split('T')[0];
+  
+        // Format the prices and calculate discount
+        const priceFormatted = `${(ticket.price).toFixed(2).toString().replace('.', ',')} €`;
+        const fullPriceFormatted = `${(ticket.fullPrice).toFixed(2).toString().replace('.', ',')} €`;
+        const discount = `${(ticket.fullPrice - ticket.price).toFixed(2).toString().replace('.', ',')} €`;
+  
+        // Format each row of data with semicolon as the delimiter
+        const row = [
+          formattedDate,
+          ticket.outwardJourney,
+          ticket.returnJourney,
+          ticket.journey,
+          priceFormatted,
+          fullPriceFormatted,
+          discount,
+          ticket.ticketClass,
+          ticket.travelersCount,
+          ticket.ticketType,
+          ticket.bahncard
+        ].join(';');
+  
+        csvContent += row + "\n";
+      });
+  
+      // Encoding URI
+      const encodedUri = encodeURI(csvContent);
+      return encodedUri;
+    };
+  
+    // Trigger CSV download
+    const csvUri = convertToCSV();
+    const link = document.createElement("a");
+    link.setAttribute("href", csvUri);
+    link.setAttribute("download", "ticket_summary.csv");
+    document.body.appendChild(link); // Required for FF
+    link.click(); // This will download the data file named "ticket_summary.csv".
+    document.body.removeChild(link); // Clean up
+  };
+  
 
   return (
     <div>
       <div className="priceSummary">
         <p>Gesamtpreis: {totalPrice.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
         <br/>Gesamtpreis ohne BahnCard-Rabatte: {totalUndiscountedPrice.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
+        <button aria-label="Fahrten als CSV exportieren" onClick={exportToCSV}>Fahrten als CSV exportieren</button>
       </div>
 
       <section id="result">
